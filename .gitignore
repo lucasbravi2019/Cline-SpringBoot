@@ -1,0 +1,56 @@
+# Spring Boot specific ignores
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+.vscode/
+*.iws
+.out/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.jar
+*.war
+*.ear
+*.class
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+
+# Maven
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
+
+# Gradle
+.gradle/
+build/
+!build/distributions/
+
+# IDE specific
+*.iml
+*.ipr
+*.iws
+
+# OS generated files
+._*
+
+# Project-specific rules from .clinerules
+# Based on workflow guidelines
+progress.md
+
+# Agents rules
+AGENTS.md
+architecture.md
+decisions.md
+.clinerules/
