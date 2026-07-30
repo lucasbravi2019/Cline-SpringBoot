@@ -8,9 +8,8 @@ This project demonstrates containerization of a Spring Boot application using Do
 - `docker-compose.yml` - Orchestrates both Spring Boot and SQL Server containers
 - `.dockerignore` - Excludes unnecessary files from Docker build context
 - `.env.example` - Example environment variables file
-- `.env` - Local environment variables (not committed to version control)
-- `sqlserver.env` - SQL Server container environment variables
-- `src/main/resources/application.properties` - Development configuration with H2
+- `sql-scripts/init.sql` - SQL Server database initialization script
+- `src/main/resources/application.properties` - Development configuration with SQL Server
 - `src/main/resources/application-prod.properties` - Production configuration with SQL Server
 
 ## Prerequisites
@@ -29,7 +28,6 @@ This project demonstrates containerization of a Spring Boot application using Do
 
 2. The application will be available at:
    - Spring Boot App: http://localhost:8080
-   - H2 Console: http://localhost:8080/h2-console (when using default profile)
    - SQL Server: Port 1433
 
 3. To stop the containers:
@@ -39,9 +37,10 @@ This project demonstrates containerization of a Spring Boot application using Do
 
 ### Environment Variables
 
-The following environment variables can be customized in `docker-compose.yml`:
+The following environment variables can be customized in `.env.example`:
 
-- `SA_PASSWORD` - SQL Server SA password (default: YourStrong@Passw0rd)
+- `SPRING_PROFILES_ACTIVE` - Application profile (default: prod)
+- `SERVER_PORT` - Server port (default: 8080)
 - `SPRING_DATASOURCE_URL` - Database connection URL
 - `SPRING_DATASOURCE_USERNAME` - Database username (default: sa)
 - `SPRING_DATASOURCE_PASSWORD` - Database password
@@ -50,7 +49,7 @@ The following environment variables can be customized in `docker-compose.yml`:
 ## Database Configuration
 
 The application supports both:
-1. **Development**: H2 in-memory database (default)
+1. **Development**: SQL Server database in Docker container (default)
 2. **Production**: SQL Server database in Docker container
 
 When running with Docker Compose, the application automatically uses the SQL Server configuration via the `application-prod.properties` profile.
