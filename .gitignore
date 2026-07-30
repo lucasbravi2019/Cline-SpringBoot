@@ -24,6 +24,7 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+sqlserver.env
 
 # Logs
 logs/
@@ -54,3 +55,10 @@ AGENTS.md
 architecture.md
 decisions.md
 .clinerules/
+.agents/
+sql-scripts/
+
+# Docker
+docker-compose.override.yml
+docker-compose.prod.yml
+.env
