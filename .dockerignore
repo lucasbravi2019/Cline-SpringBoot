@@ -1,0 +1,35 @@
+# Ignore git files
+.git
+.gitignore
+.github
+
+# Ignore Maven files
+.mvn
+mvnw
+mvnw.cmd
+
+# Ignore IDE files
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+
+# Ignore logs
+*.log
+
+# Ignore target directory (this is where the JAR will be built)
+target/
+
+# Ignore Docker-related files (if you have multiple Dockerfiles)
+Dockerfile*
+docker-compose*
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore environment files
+.env
+.env.local
+.env.*.local
