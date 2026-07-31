@@ -1,7 +1,12 @@
 package com.example.advice;
 
-import com.example.exception.CustomException;
+import com.example.exception.BadRequestException;
+import com.example.exception.ConflictException;
+import com.example.exception.NotFoundException;
 import com.example.model.ErrorResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -16,16 +21,43 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ErrorResponse> handleCustomException(CustomException ex, WebRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setStatus(ex.getStatusCode());
-        errorResponse.setError(getErrorDescription(ex.getStatusCode()));
-        errorResponse.setMessage(ex.getMessage());
-        errorResponse.setTimestamp(LocalDateTime.now());
-        errorResponse.setPath(request.getDescription(false).substring(4)); // Remove "uri=" prefix
+    @Autowired
+    private MessageSource messageSource;
 
-        return new ResponseEntity<>(errorResponse, HttpStatus.valueOf(ex.getStatusCode()));
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException ex, WebRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+        errorResponse.setError(HttpStatus.BAD_REQUEST.name());
+        errorResponse.setMessage(ex.getLocalizedMessage(messageSource));
+        errorResponse.setTimestamp(LocalDateTime.now());
+        errorResponse.setPath(request.getDescription(false).substring(4));
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException ex, WebRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setStatus(HttpStatus.NOT_FOUND.value());
+        errorResponse.setError(HttpStatus.NOT_FOUND.name());
+        errorResponse.setMessage(ex.getLocalizedMessage(messageSource));
+        errorResponse.setTimestamp(LocalDateTime.now());
+        errorResponse.setPath(request.getDescription(false).substring(4));
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponse> handleNotFoundException(ConflictException ex, WebRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setStatus(HttpStatus.CONFLICT.value());
+        errorResponse.setError(HttpStatus.CONFLICT.name());
+        errorResponse.setMessage(ex.getLocalizedMessage(messageSource));
+        errorResponse.setTimestamp(LocalDateTime.now());
+        errorResponse.setPath(request.getDescription(false).substring(4));
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -38,7 +70,37 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setStatus(400);
         errorResponse.setError("Bad Request");
-        errorResponse.setMessage("Validation failed for fields: " + errors.toString());
+        
+        // For validation errors, we'll use centralized messages with better structure
+        if (!errors.isEmpty()) {
+            StringBuilder messageBuilder = new StringBuilder();
+            errors.forEach((field, defaultMessage) -> {
+                // Try to get a more descriptive centralized message if possible
+                // First, check if there's a specific field-based message
+                String key = "validation." + field + ".invalid";
+                String localizedMessage = messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
+                
+                // If we don't find a specific field message, use the generic one
+                if (localizedMessage.equals(key)) {
+                    // Fallback to general error message
+                    localizedMessage = messageSource.getMessage("validation.general.error", 
+                        new Object[]{defaultMessage}, LocaleContextHolder.getLocale());
+                }
+                
+                messageBuilder.append(field).append(": ").append(localizedMessage).append("; ");
+            });
+            
+            // Remove trailing "; " if present
+            String finalMessage = messageBuilder.toString();
+            if (finalMessage.endsWith("; ")) {
+                finalMessage = finalMessage.substring(0, finalMessage.length() - 2);
+            }
+            
+            errorResponse.setMessage(finalMessage);
+        } else {
+            errorResponse.setMessage("Validation failed");
+        }
+        
         errorResponse.setTimestamp(LocalDateTime.now());
         errorResponse.setPath(request.getDescription(false).substring(4));
 
@@ -57,18 +119,4 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private String getErrorDescription(int statusCode) {
-        switch (statusCode) {
-            case 400:
-                return "Bad Request";
-            case 404:
-                return "Not Found";
-            case 409:
-                return "Conflict";
-            case 500:
-                return "Internal Server Error";
-            default:
-                return "Error";
-        }
-    }
 }

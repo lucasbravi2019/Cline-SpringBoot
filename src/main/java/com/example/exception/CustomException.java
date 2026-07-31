@@ -1,20 +1,23 @@
 package com.example.exception;
 
-import lombok.Getter;
-import lombok.Setter;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 
+import lombok.Data;
+
+@Data
 public class CustomException extends RuntimeException {
-    @Getter
-    @Setter
-    private int statusCode;
+    
+    private final String messageKey;
+    private final Object[] args;
 
-    public CustomException(String message, int statusCode) {
-        super(message);
-        this.statusCode = statusCode;
+    public CustomException(String messageKey, Object[] args) {
+        this.messageKey = messageKey;
+        this.args = args;
     }
 
-    public CustomException(String message, int statusCode, Throwable cause) {
-        super(message, cause);
-        this.statusCode = statusCode;
+    public String getLocalizedMessage(MessageSource messageSource) {
+        return messageSource.getMessage(this.messageKey, args, LocaleContextHolder.getLocale());
     }
+
 }
