@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<ruleset name="Spring Boot PMD Rules"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+
+  <description>PMd rules for Spring Boot application</description>
+
+  <!-- Best Practices -->
+  <rule ref="rulesets/java/bestpractices.xml/UnusedImports">
+    <priority>3</priority>
+  </rule>
+  
+  <rule ref="rulesets/java/bestpractices.xml/UnusedLocalVariable">
+    <priority>3</priority>
+  </rule>
+  
+  <rule ref="rulesets/java/bestpractices.xml/UnusedPrivateField">
+    <priority>3</priority>
+  </rule>
+  
+  <!-- Error Prone -->
+  <rule ref="rulesets/java/errorprone.xml/EmptyCatchBlock">
+    <priority>3</priority>
+    <properties>
+      <property name="allowCommentedBlocks" value="true"/>
+    </properties>
+  </rule>
+  
+  <rule ref="rulesets/java/errorprone.xml/ExceptionAsFlowControl">
+    <priority>2</priority>
+  </rule>
+  
+  <rule ref="rulesets/java/errorprone.xml/ReturnFromFinallyBlock">
+    <priority>2</priority>
+  </rule>
+  
+  <!-- Design -->
+  <rule ref="rulesets/java/design.xml/UnnecessaryFullyQualifiedName">
+    <priority>3</priority>
+  </rule>
+  
+  <rule ref="rulesets/java/design.xml/EqualsHashCode">
+    <priority>2</priority>
+  </rule>
+  
+  <rule ref="rulesets/java/design.xml/TooManyMethods">
+    <priority>3</priority>
+    <properties>
+      <property name="maxmethods" value="10"/>
+    </properties>
+  </rule>
+  
+  <!-- Spring Boot Specific -->
+  <rule ref="rulesets/java/spring.xml/SpringComponentWithNonCallableMethod">
+    <priority>2</priority>
+  </rule>
+  
+  <rule ref="rulesets/java/spring.xml/SpringControllerWithNoRequestMapping">
+    <priority>3</priority>
+  </rule>
+
+</ruleset>
