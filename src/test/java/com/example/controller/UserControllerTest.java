@@ -4,6 +4,7 @@ import com.example.advice.GlobalExceptionHandler;
 import com.example.exception.NotFoundException;
 import com.example.model.CreateUserRequestDto;
 import com.example.model.UserDto;
+import com.example.model.UpdateUserRequestDto;
 import com.example.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,9 +19,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -45,9 +48,6 @@ class UserControllerTest {
             .standaloneSetup(new UserController(userService))
             .setControllerAdvice(new GlobalExceptionHandler(messageSource))
             .build();
-        // This is fine - creating a local ObjectMapper instance with JavaTimeModule for test serialization
-        // objectMapper = new ObjectMapper();
-        // objectMapper.registerModule(new JavaTimeModule());
     }
 
     @Test
@@ -127,6 +127,64 @@ class UserControllerTest {
         when(userService.getUserById(userId)).thenThrow(new NotFoundException("validation.user.not.found", 1L));
         // Mock the behavior that should occur in real execution context
         mockMvc.perform(get("/user/{id}", userId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("User with ID 1 not found"))
+                .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
+                .andExpect(jsonPath("$.error").value(HttpStatus.NOT_FOUND.name()));
+    }
+    
+    @Test
+    void updateUser_ShouldUpdateUser() throws Exception {
+        Long userId = 1L;
+        
+        UpdateUserRequestDto request = new UpdateUserRequestDto();
+        request.setEmail("updated@example.com");
+        request.setUsername("updateduser");
+                    
+        mockMvc.perform(put("/user/{id}", userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNoContent());
+    }
+    
+    @Test
+    void updateUser_ShouldReturnNotFound_WhenUserDoesNotExist() throws Exception {
+        Long userId = 1L;
+        
+        UpdateUserRequestDto request = new UpdateUserRequestDto();
+        request.setEmail("updated@example.com");
+        request.setUsername("updateduser");
+        
+        doThrow(new NotFoundException("validation.user.not.found", 1L)).when(userService)
+            .updateUser(any(Long.class), any(UpdateUserRequestDto.class));
+
+        mockMvc.perform(put("/user/{id}", userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("User with ID 1 not found"))
+                .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
+                .andExpect(jsonPath("$.error").value(HttpStatus.NOT_FOUND.name()));
+    }
+    
+    @Test
+    void softDeleteUser_ShouldReturnNoContent_WhenUserExists() throws Exception {
+        Long userId = 1L;
+        
+        mockMvc.perform(put("/user/{id}/delete", userId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+    }
+    
+    @Test
+    void softDeleteUser_ShouldReturnNotFound_WhenUserDoesNotExist() throws Exception {
+        Long userId = 1L;
+        
+        doThrow(new NotFoundException("validation.user.not.found", 1L)).when(userService).softDeleteUser(userId);
+
+        // This is how you properly mock a void method to throw exception in Mockito  
+        mockMvc.perform(put("/user/{id}/delete", userId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("User with ID 1 not found"))
