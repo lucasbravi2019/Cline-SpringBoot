@@ -1,5 +1,9 @@
 package com.example.service;
 
+import com.example.model.CreateUserRequestDto;
+import com.example.model.UserDto;
+
 public interface UserService {
-    String getUserById(Long id);
+    UserDto getUserById(Long id);
+    Long createUser(CreateUserRequestDto request);
 }

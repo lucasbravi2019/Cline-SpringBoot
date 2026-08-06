@@ -4,7 +4,6 @@ import com.example.exception.BadRequestException;
 import com.example.exception.ConflictException;
 import com.example.exception.NotFoundException;
 import com.example.model.ErrorResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
@@ -21,8 +20,11 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @Autowired
-    private MessageSource messageSource;
+    private final MessageSource messageSource;
+
+    public GlobalExceptionHandler(MessageSource messageSource) {
+        this.messageSource = messageSource;
+    }
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException ex, WebRequest request) {
@@ -68,8 +70,8 @@ public class GlobalExceptionHandler {
             errors.put(error.getField(), error.getDefaultMessage()));
         
         ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setStatus(400);
-        errorResponse.setError("Bad Request");
+        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+        errorResponse.setError(HttpStatus.BAD_REQUEST.name());
         
         // For validation errors, we'll use centralized messages with better structure
         if (!errors.isEmpty()) {
@@ -77,16 +79,8 @@ public class GlobalExceptionHandler {
             errors.forEach((field, defaultMessage) -> {
                 // Try to get a more descriptive centralized message if possible
                 // First, check if there's a specific field-based message
-                String key = "validation." + field + ".invalid";
-                String localizedMessage = messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
-                
-                // If we don't find a specific field message, use the generic one
-                if (localizedMessage.equals(key)) {
-                    // Fallback to general error message
-                    localizedMessage = messageSource.getMessage("validation.general.error", 
-                        new Object[]{defaultMessage}, LocaleContextHolder.getLocale());
-                }
-                
+                String localizedMessage = messageSource.getMessage(defaultMessage, null, LocaleContextHolder.getLocale());
+
                 messageBuilder.append(field).append(": ").append(localizedMessage).append("; ");
             });
             

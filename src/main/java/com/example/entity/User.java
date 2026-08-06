@@ -13,7 +13,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -21,6 +24,7 @@ import lombok.EqualsAndHashCode;
 @Setter
 @ToString
 @EqualsAndHashCode
+@Builder
 public class User {
     
     @Id
@@ -36,4 +40,15 @@ public class User {
     @Email(message = "{validation.email.invalid}")
     @Column(name = "email")
     private String email;
+    
+    @NotNull(message = "{validation.user.active.required}")
+    @Column(name = "active")
+    private Boolean active = true;
+    
+    @NotNull(message = "{validation.user.created_at.required}")
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+    
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }
