@@ -3,6 +3,7 @@ package com.example.mapper;
 import com.example.entity.User;
 import com.example.model.UserDto;
 import com.example.model.CreateUserRequestDto;
+import com.example.model.UpdateUserRequestDto;
 
 import java.time.LocalDateTime;
 
@@ -34,5 +35,22 @@ public class UserMapper {
             .username(user.getUsername())
             .email(user.getEmail())
             .build();
+    }
+    
+    public User updateFromRequest(User user, UpdateUserRequestDto request) {
+        if (request.getUsername() != null) {
+            user.setUsername(request.getUsername());
+        }
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
+        }
+        user.setUpdatedAt(LocalDateTime.now());
+        return user;
+    }
+    
+    public User updateActiveField(User user, Boolean active) {
+        user.setActive(active);
+        user.setUpdatedAt(LocalDateTime.now());
+        return user;
     }
 }

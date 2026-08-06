@@ -10,8 +10,6 @@ import com.example.mapper.UserMapper;
 import com.example.model.UpdateUserRequestDto;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-
 @Service
 public class UserServiceImpl implements UserService {
     
@@ -33,7 +31,6 @@ public class UserServiceImpl implements UserService {
     public Long createUser(CreateUserRequestDto request) {
         // Validate request (already handled by Bean Validation)
         User user = userMapper.fromCreateRequest(request);
-        user.setCreatedAt(LocalDateTime.now());
         User savedUser = userRepository.save(user);
         return savedUser.getId();
     }
@@ -43,15 +40,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("validation.user.not.found", id));
         
-        // Update fields from request
-        if (request.getUsername() != null) {
-            user.setUsername(request.getUsername());
-        }
-        if (request.getEmail() != null) {
-            user.setEmail(request.getEmail());
-        }
-        
-        user.setUpdatedAt(LocalDateTime.now());
+        userMapper.updateFromRequest(user, request);
         userRepository.save(user);
     }
     
@@ -60,8 +49,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("validation.user.not.found", id));
         
-        user.setActive(false);
-        user.setUpdatedAt(LocalDateTime.now());
+        userMapper.updateActiveField(user, false);
         userRepository.save(user);
     }
 }

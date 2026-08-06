@@ -23,6 +23,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.eq;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
@@ -138,6 +139,8 @@ class UserServiceImplTest {
 
         verify(userRepository, times(1)).findById(userId);
         verify(userRepository, times(1)).save(any(User.class));
+        // Verify that the mapper was called with the proper parameters
+        verify(userMapper, times(1)).updateFromRequest(any(User.class), any(UpdateUserRequestDto.class));
     }
     
     @Test
@@ -179,7 +182,8 @@ class UserServiceImplTest {
 
         verify(userRepository, times(1)).findById(userId);
         verify(userRepository, times(1)).save(any(User.class));
-        // Verify that active is set to false (though we're not directly checking the field value)
+        // Verify that the mapper was called with the proper parameters
+        verify(userMapper, times(1)).updateActiveField(any(User.class), eq(false));
     }
     
     @Test
